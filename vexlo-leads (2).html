@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vexlo Leads — Negocios sin web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0a; --bg2: #111111; --bg3: #1a1a1a;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+    --text: #f0f0f0; --muted: #888; --accent: #c8f564; --accent2: #9fd840;
+    --danger: #ff5c5c; --radius: 12px; --radius-sm: 8px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+  header { padding: 2rem 2.5rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: -0.03em; }
+  .logo span { color: var(--accent); }
+  .badge { font-size: 11px; font-weight: 500; background: rgba(200,245,100,0.1); color: var(--accent); border: 1px solid rgba(200,245,100,0.2); padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+  main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem; }
+  h1 { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 0.5rem; }
+  h1 em { color: var(--accent); font-style: normal; }
+  .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; font-weight: 300; }
+  .search-box { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+  .field input, .field select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; padding: 0.65rem 0.9rem; outline: none; transition: border-color 0.2s; appearance: none; }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select option { background: #1a1a1a; }
+  .btn-search { width: 100%; background: var(--accent); color: #0a0a0a; border: none; border-radius: var(--radius-sm); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; padding: 0.8rem; cursor: pointer; transition: background 0.2s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 0.5rem; }
+  .btn-search:hover { background: var(--accent2); }
+  .btn-search:active { transform: scale(0.99); }
+  .btn-search:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #0a0a0a; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; text-align: center; }
+  .stat-card .num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.2rem; }
+  .stat-card .num.green { color: var(--accent); }
+  .stat-card .lbl { font-size: 12px; color: var(--muted); font-weight: 300; }
+  .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .results-header h2 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+  .btn-export { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 0.4rem 0.9rem; cursor: pointer; transition: all 0.2s; }
+  .btn-export:hover { border-color: var(--accent); color: var(--accent); }
+  .lead-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 0.6rem; display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; align-items: start; transition: border-color 0.2s; }
+  .lead-card:hover { border-color: var(--border2); }
+  .lead-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: -0.02em; margin-bottom: 0.2rem; }
+  .lead-meta { font-size: 13px; color: var(--muted); display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+  .tag-cat { background: rgba(200,245,100,0.08); color: var(--accent); border: 1px solid rgba(200,245,100,0.15); }
+  .tag-noweb { background: rgba(255,92,92,0.08); color: var(--danger); border: 1px solid rgba(255,92,92,0.15); }
+  .btn-maps { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--muted); font-size: 12px; padding: 0.35rem 0.7rem; cursor: pointer; text-decoration: none; transition: all 0.2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; display: block; text-align: center; }
+  .btn-maps:hover { border-color: var(--accent); color: var(--accent); }
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+  .tip { background: rgba(200,245,100,0.04); border: 1px solid rgba(200,245,100,0.1); border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
+  .tip strong { color: var(--accent); }
+  #status-msg { font-size: 13px; color: var(--muted); text-align: center; padding: 0.5rem; display: none; }
+  @media (max-width: 600px) { .row { grid-template-columns: 1fr; } h1 { font-size: 1.7rem; } header { padding: 1.25rem; } main { padding: 1.5rem 1.25rem; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">vexlo<span>.design</span></div>
+  <span class="badge">Lead Finder</span>
+</header>
+<main>
+  <h1>Negocios sin <em>web</em><br>en tu zona</h1>
+  <p class="subtitle">Encuentra clientes potenciales usando OpenStreetMap — 100% gratis, sin límites.</p>
+  <div class="tip"><strong>Consejo:</strong> Busca por barrios concretos (Gràcia, Eixample, Chamberí) y no ciudades enteras para mejores resultados.</div>
+  <div class="search-box">
+    <div class="row">
+      <div class="field">
+        <label>Ciudad o barrio</label>
+        <input type="text" id="city" placeholder="Gràcia, Barcelona..." value="Gràcia, Barcelona">
+      </div>
+      <div class="field">
+        <label>Tipo de negocio</label>
+        <select id="category">
+          <option value="restaurant">Restaurantes</option>
+          <option value="bar">Bares y cafeterías</option>
+          <option value="hairdresser">Peluquerías</option>
+          <option value="beauty">Centros de belleza</option>
+          <option value="shop">Tiendas de ropa</option>
+          <option value="gym">Gimnasios</option>
+          <option value="hotel">Hoteles</option>
+          <option value="dentist">Dentistas</option>
+          <option value="bakery">Panaderías</option>
+          <option value="florist">Floristerías</option>
+          <option value="car_repair">Talleres de coches</option>
+          <option value="pharmacy">Farmacias</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Radio de búsqueda</label>
+        <select id="radius">
+          <option value="500">500 m — muy local</option>
+          <option value="1000" selected>1 km — barrio</option>
+          <option value="2000">2 km — zona amplia</option>
+          <option value="5000">5 km — ciudad</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Mostrar</label>
+        <select id="filter">
+          <option value="noweb" selected>Solo sin web</option>
+          <option value="all">Todos los resultados</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-search" id="btn-search" onclick="search()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btn-text">Buscar leads</span>
+    </button>
+    <div id="status-msg"></div>
+  </div>
+
+  <div id="stats-section" style="display:none">
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="stat-total">0</div><div class="lbl">encontrados</div></div>
+      <div class="stat-card"><div class="num green" id="stat-noweb">0</div><div class="lbl">sin web</div></div>
+      <div class="stat-card"><div class="num" id="stat-pct">0%</div><div class="lbl">son leads</div></div>
+    </div>
+  </div>
+
+  <div id="results-section" style="display:none">
+    <div class="results-header">
+      <h2 id="results-title">Resultados</h2>
+      <button class="btn-export" onclick="exportCSV()">Exportar CSV</button>
+    </div>
+    <div id="results-list"></div>
+  </div>
+
+  <div id="empty-section" style="display:none" class="empty">
+    <p style="font-size:2rem;margin-bottom:.75rem;opacity:.4">📭</p>
+    <p>No se encontraron resultados.<br><span style="font-size:13px">Prueba con otra zona o amplía el radio.</span></p>
+  </div>
+</main>
+
+<script>
+let allResults = [];
+
+const CATEGORY_MAP = {
+  restaurant: { osm: 'amenity=restaurant', label: 'Restaurante' },
+  bar: { osm: 'amenity=bar', label: 'Bar / Cafetería' },
+  hairdresser: { osm: 'shop=hairdresser', label: 'Peluquería' },
+  beauty: { osm: 'shop=beauty', label: 'Centro de belleza' },
+  shop: { osm: 'shop=clothes', label: 'Tienda de ropa' },
+  gym: { osm: 'leisure=fitness_centre', label: 'Gimnasio' },
+  hotel: { osm: 'tourism=hotel', label: 'Hotel' },
+  dentist: { osm: 'amenity=dentist', label: 'Dentista' },
+  bakery: { osm: 'shop=bakery', label: 'Panadería' },
+  florist: { osm: 'shop=florist', label: 'Floristería' },
+  car_repair: { osm: 'shop=car_repair', label: 'Taller' },
+  pharmacy: { osm: 'amenity=pharmacy', label: 'Farmacia' }
+};
+
+function setLoading(on) {
+  const btn = document.getElementById('btn-search');
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btn-text').textContent = on ? 'Buscando...' : 'Buscar leads';
+  btn.disabled = on;
+}
+
+function setStatus(msg) {
+  const el = document.getElementById('status-msg');
+  el.style.display = msg ? 'block' : 'none';
+  el.textContent = msg;
+}
+
+async function geocode(city) {
+  const url = 'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(city) + '&format=json&limit=1';
+  const res = await fetch(url, { headers: { 'Accept-Language': 'es', 'User-Agent': 'VexloLeadFinder/1.0' } });
+  const data = await res.json();
+  if (!data.length) throw new Error('Ciudad no encontrada. Prueba con otro nombre.');
+  return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+}
+
+async function queryOverpass(lat, lon, radius, category) {
+  const cat = CATEGORY_MAP[category];
+  const [k, v] = cat.osm.split('=');
+  const query = `[out:json][timeout:30];(node["${k}"="${v}"](around:${radius},${lat},${lon});way["${k}"="${v}"](around:${radius},${lat},${lon}););out center 150;`;
+  
+  const proxies = [
+    'https://overpass-api.de/api/interpreter',
+    'https://lz4.overpass-api.de/api/interpreter',
+    'https://z.overpass-api.de/api/interpreter'
+  ];
+
+  for (const proxy of proxies) {
+    try {
+      const res = await fetch(proxy, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'data=' + encodeURIComponent(query)
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      return data.elements || [];
+    } catch(e) {
+      continue;
+    }
+  }
+  throw new Error('No se pudo conectar con OpenStreetMap. Comprueba tu conexión a internet.');
+}
+
+async function search() {
+  const city = document.getElementById('city').value.trim();
+  const category = document.getElementById('category').value;
+  const radius = document.getElementById('radius').value;
+  const filter = document.getElementById('filter').value;
+
+  if (!city) { alert('Escribe una ciudad o barrio.'); return; }
+
+  setLoading(true);
+  setStatus('Localizando ' + city + '...');
+  document.getElementById('stats-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('empty-section').style.display = 'none';
+
+  try {
+    const coords = await geocode(city);
+    setStatus('Consultando OpenStreetMap...');
+    const elements = await queryOverpass(coords.lat, coords.lon, radius, category);
+
+    allResults = elements.map(el => {
+      const tags = el.tags || {};
+      const lat = el.lat || (el.center && el.center.lat);
+      const lon = el.lon || (el.center && el.center.lon);
+      return {
+        name: tags.name || null,
+        category: CATEGORY_MAP[category].label,
+        address: [tags['addr:street'], tags['addr:housenumber']].filter(Boolean).join(' ') || '',
+        phone: tags.phone || tags['contact:phone'] || '',
+        website: tags.website || tags['contact:website'] || tags.url || '',
+        lat, lon,
+        hasWeb: !!(tags.website || tags['contact:website'] || tags.url)
+      };
+    }).filter(r => r.name);
+
+    const noWeb = allResults.filter(r => !r.hasWeb);
+    const display = filter === 'noweb' ? noWeb : allResults;
+
+    document.getElementById('stat-total').textContent = allResults.length;
+    document.getElementById('stat-noweb').textContent = noWeb.length;
+    document.getElementById('stat-pct').textContent = allResults.length > 0 ? Math.round(noWeb.length / allResults.length * 100) + '%' : '0%';
+    document.getElementById('stats-section').style.display = 'block';
+
+    if (display.length === 0) {
+      document.getElementById('empty-section').style.display = 'block';
+    } else {
+      renderResults(display, filter);
+    }
+  } catch(e) {
+    setStatus('Error: ' + e.message);
+  } finally {
+    setLoading(false);
+    if (!document.getElementById('status-msg').textContent.startsWith('Error')) setStatus('');
+  }
+}
+
+function renderResults(list, filter) {
+  document.getElementById('results-title').textContent = filter === 'noweb' ? list.length + ' leads sin web' : list.length + ' negocios encontrados';
+  document.getElementById('results-list').innerHTML = list.map(r => `
+    <div class="lead-card">
+      <div>
+        <div class="lead-name">${esc(r.name)}</div>
+        <div class="lead-meta">
+          <span class="tag tag-cat">${r.category}</span>
+          ${!r.hasWeb ? '<span class="tag tag-noweb">Sin web</span>' : ''}
+          ${r.address ? '<span>📍 ' + esc(r.address) + '</span>' : ''}
+          ${r.phone ? '<span>📞 ' + esc(r.phone) + '</span>' : ''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.4rem">
+        ${r.lat && r.lon ? `<a class="btn-maps" href="https://www.google.com/maps?q=${r.lat},${r.lon}" target="_blank">Ver en Maps ↗</a>` : ''}
+        ${r.phone ? `<a class="btn-maps" href="tel:${r.phone}">Llamar</a>` : ''}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('results-section').style.display = 'block';
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function exportCSV() {
+  const filter = document.getElementById('filter').value;
+  const list = filter === 'noweb' ? allResults.filter(r => !r.hasWeb) : allResults;
+  if (!list.length) return;
+  const rows = [['Nombre','Categoría','Dirección','Teléfono','Web','Latitud','Longitud']];
+  list.forEach(r => rows.push([r.name, r.category, r.address, r.phone, r.website, r.lat||'', r.lon||'']));
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vexlo-leads.csv';
+  a.click();
+}
+
+document.getElementById('city').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+</script>
+</body>
+</html>
