@@ -47,17 +47,22 @@
   .lead-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 0.6rem; display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; align-items: start; transition: border-color 0.2s; }
   .lead-card:hover { border-color: var(--border2); }
   .lead-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: -0.02em; margin-bottom: 0.2rem; }
-  .lead-meta { font-size: 13px; color: var(--muted); display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+  .lead-meta { font-size: 13px; color: var(--muted); display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.6rem; }
   .tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
   .tag-cat { background: rgba(200,245,100,0.08); color: var(--accent); border: 1px solid rgba(200,245,100,0.15); }
   .tag-noweb { background: rgba(255,92,92,0.08); color: var(--danger); border: 1px solid rgba(255,92,92,0.15); }
-  .btn-maps { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--muted); font-size: 12px; padding: 0.35rem 0.7rem; cursor: pointer; text-decoration: none; transition: all 0.2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; display: block; text-align: center; }
-  .btn-maps:hover { border-color: var(--accent); color: var(--accent); }
+  .tag-hasweb { background: rgba(74,222,128,0.08); color: #4ade80; border: 1px solid rgba(74,222,128,0.15); }
+  .btn-actions { display: flex; flex-direction: column; gap: 0.4rem; }
+  .btn-action { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--muted); font-size: 12px; padding: 0.35rem 0.7rem; cursor: pointer; text-decoration: none; transition: all 0.2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; display: block; text-align: center; }
+  .btn-action:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-action.verify { border-color: rgba(200,245,100,0.3); color: var(--accent); }
+  .btn-action.verify:hover { background: rgba(200,245,100,0.08); }
+  .verify-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
   .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
   .tip { background: rgba(200,245,100,0.04); border: 1px solid rgba(200,245,100,0.1); border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
   .tip strong { color: var(--accent); }
   #status-msg { font-size: 13px; color: var(--muted); text-align: center; padding: 0.5rem; display: none; }
-  @media (max-width: 600px) { .row { grid-template-columns: 1fr; } h1 { font-size: 1.7rem; } header { padding: 1.25rem; } main { padding: 1.5rem 1.25rem; } }
+  @media (max-width: 600px) { .row { grid-template-columns: 1fr; } h1 { font-size: 1.7rem; } header { padding: 1.25rem; } main { padding: 1.5rem 1.25rem; } .lead-card { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -68,7 +73,7 @@
 <main>
   <h1>Negocios sin <em>web</em><br>en tu zona</h1>
   <p class="subtitle">Encuentra clientes potenciales usando OpenStreetMap — 100% gratis, sin límites.</p>
-  <div class="tip"><strong>Consejo:</strong> Busca por barrios concretos (Gràcia, Eixample, Chamberí) y no ciudades enteras para mejores resultados.</div>
+  <div class="tip"><strong>Nuevo:</strong> Cada lead tiene botones para verificar en Google, Maps y buscar su web en un clic.</div>
   <div class="search-box">
     <div class="row">
       <div class="field">
@@ -159,10 +164,9 @@ const CATEGORY_MAP = {
 };
 
 function setLoading(on) {
-  const btn = document.getElementById('btn-search');
   document.getElementById('spinner').style.display = on ? 'block' : 'none';
   document.getElementById('btn-text').textContent = on ? 'Buscando...' : 'Buscar leads';
-  btn.disabled = on;
+  document.getElementById('btn-search').disabled = on;
 }
 
 function setStatus(msg) {
@@ -183,13 +187,11 @@ async function queryOverpass(lat, lon, radius, category) {
   const cat = CATEGORY_MAP[category];
   const [k, v] = cat.osm.split('=');
   const query = `[out:json][timeout:30];(node["${k}"="${v}"](around:${radius},${lat},${lon});way["${k}"="${v}"](around:${radius},${lat},${lon}););out center 150;`;
-  
   const proxies = [
     'https://overpass-api.de/api/interpreter',
     'https://lz4.overpass-api.de/api/interpreter',
     'https://z.overpass-api.de/api/interpreter'
   ];
-
   for (const proxy of proxies) {
     try {
       const res = await fetch(proxy, {
@@ -200,11 +202,9 @@ async function queryOverpass(lat, lon, radius, category) {
       if (!res.ok) continue;
       const data = await res.json();
       return data.elements || [];
-    } catch(e) {
-      continue;
-    }
+    } catch(e) { continue; }
   }
-  throw new Error('No se pudo conectar con OpenStreetMap. Comprueba tu conexión a internet.');
+  throw new Error('No se pudo conectar. Comprueba tu conexión.');
 }
 
 async function search() {
@@ -212,20 +212,16 @@ async function search() {
   const category = document.getElementById('category').value;
   const radius = document.getElementById('radius').value;
   const filter = document.getElementById('filter').value;
-
   if (!city) { alert('Escribe una ciudad o barrio.'); return; }
-
   setLoading(true);
   setStatus('Localizando ' + city + '...');
   document.getElementById('stats-section').style.display = 'none';
   document.getElementById('results-section').style.display = 'none';
   document.getElementById('empty-section').style.display = 'none';
-
   try {
     const coords = await geocode(city);
     setStatus('Consultando OpenStreetMap...');
     const elements = await queryOverpass(coords.lat, coords.lon, radius, category);
-
     allResults = elements.map(el => {
       const tags = el.tags || {};
       const lat = el.lat || (el.center && el.center.lat);
@@ -243,12 +239,10 @@ async function search() {
 
     const noWeb = allResults.filter(r => !r.hasWeb);
     const display = filter === 'noweb' ? noWeb : allResults;
-
     document.getElementById('stat-total').textContent = allResults.length;
     document.getElementById('stat-noweb').textContent = noWeb.length;
     document.getElementById('stat-pct').textContent = allResults.length > 0 ? Math.round(noWeb.length / allResults.length * 100) + '%' : '0%';
     document.getElementById('stats-section').style.display = 'block';
-
     if (display.length === 0) {
       document.getElementById('empty-section').style.display = 'block';
     } else {
@@ -262,6 +256,18 @@ async function search() {
   }
 }
 
+function googleSearch(name, address) {
+  return 'https://www.google.com/search?q=' + encodeURIComponent(name + ' ' + address);
+}
+
+function googleWebSearch(name, address) {
+  return 'https://www.google.com/search?q=' + encodeURIComponent('"' + name + '" ' + address + ' sitio web');
+}
+
+function googleMapsSearch(name, address) {
+  return 'https://www.google.com/maps/search/' + encodeURIComponent(name + ' ' + address);
+}
+
 function renderResults(list, filter) {
   document.getElementById('results-title').textContent = filter === 'noweb' ? list.length + ' leads sin web' : list.length + ' negocios encontrados';
   document.getElementById('results-list').innerHTML = list.map(r => `
@@ -270,14 +276,16 @@ function renderResults(list, filter) {
         <div class="lead-name">${esc(r.name)}</div>
         <div class="lead-meta">
           <span class="tag tag-cat">${r.category}</span>
-          ${!r.hasWeb ? '<span class="tag tag-noweb">Sin web</span>' : ''}
+          ${!r.hasWeb ? '<span class="tag tag-noweb">Sin web</span>' : '<span class="tag tag-hasweb">Tiene web</span>'}
           ${r.address ? '<span>📍 ' + esc(r.address) + '</span>' : ''}
           ${r.phone ? '<span>📞 ' + esc(r.phone) + '</span>' : ''}
         </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:0.4rem">
-        ${r.lat && r.lon ? `<a class="btn-maps" href="https://www.google.com/maps?q=${r.lat},${r.lon}" target="_blank">Ver en Maps ↗</a>` : ''}
-        ${r.phone ? `<a class="btn-maps" href="tel:${r.phone}">Llamar</a>` : ''}
+        <div class="verify-row">
+          <a class="btn-action verify" href="${googleSearch(r.name, r.address)}" target="_blank">🔍 Buscar en Google</a>
+          <a class="btn-action verify" href="${googleWebSearch(r.name, r.address)}" target="_blank">🌐 ¿Tiene web?</a>
+          <a class="btn-action verify" href="${googleMapsSearch(r.name, r.address)}" target="_blank">📍 Ver en Maps</a>
+          ${r.phone ? `<a class="btn-action" href="tel:${r.phone}">📞 Llamar</a>` : ''}
+        </div>
       </div>
     </div>
   `).join('');
